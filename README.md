@@ -111,6 +111,12 @@ Run `2026-11-16T18-42-33-124Z` · 10 documents · 386 chunks · 140 questions ·
   [`config/ABSTENTION.md`](config/ABSTENTION.md) and
   [`docs/adr/0003-abstention.md`](docs/adr/0003-abstention.md).
 
+- **Regression check in CI:** PRs touching retrieval, ingest, eval or the golden set
+  re-run the eval on GitHub Actions and fail if recall@10 drops more than 2 points
+  below [`results/baseline.json`](results/baseline.json). The baseline is measured
+  on CI itself ([`results/ci/`](results/ci/)): the int8 embedding model scores
+  slightly differently on x86 and ARM (dense recall@10 0.8015 on CI vs 0.820 on the
+  Mac that produced the table above).
 - **Chunking ablation:** `pnpm eval --ablation` (3 sizes × 2 overlaps, BM25);
   result and reading in [`docs/adr/0001-chunking.md`](docs/adr/0001-chunking.md#ablation-result).
   Larger chunks gain ~4–6 recall points, within noise; the larger overlap never helps.

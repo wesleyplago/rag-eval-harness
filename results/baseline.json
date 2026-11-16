@@ -1,6 +1,7 @@
 {
-  "source": "results/results-2026-11-16T18-42-33-124Z.json",
-  "note": "CI fails if recall@10 drops more than 0.02 below these values (scripts/check-baseline.ts). Rerank is not in the baseline: CI has no rerank endpoint.",
+  "source": "results/ci/results-2026-11-16T18-59-39-657Z.json",
+  "measuredOn": "GitHub Actions ubuntu-latest, run https://github.com/wesleyplago/rag-eval-harness/actions/runs/43931813028",
+  "note": "CI compares against values measured on CI itself: the int8 ONNX embedding model gives slightly different dense scores on x86 (CI) and ARM (local Mac); dense recall@10 is 0.8015 on CI vs 0.820 locally. The README table shows the local run. CI fails if recall@10 drops more than 0.02 below these values (scripts/check-baseline.ts). Rerank is not in the baseline: CI has no rerank endpoint.",
   "configs": {
     "bm25": {
       "recallAt10": 0.427,
@@ -8,14 +9,14 @@
       "ndcgAt10": 0.2791
     },
     "dense": {
-      "recallAt10": 0.82,
-      "mrrAt10": 0.6058,
-      "ndcgAt10": 0.6538
+      "recallAt10": 0.8015,
+      "mrrAt10": 0.5985,
+      "ndcgAt10": 0.6445
     },
     "hybrid": {
-      "recallAt10": 0.7917,
-      "mrrAt10": 0.6022,
-      "ndcgAt10": 0.6481
+      "recallAt10": 0.8,
+      "mrrAt10": 0.6083,
+      "ndcgAt10": 0.6543
     }
   }
 }
