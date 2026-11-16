@@ -1,0 +1,66 @@
+name: Retrieval eval
+
+on:
+  pull_request:
+    paths:
+      - 'src/retrieval/**'
+      - 'golden/**'
+      - 'src/ingest/**'
+      - 'src/eval/**'
+      - 'data/corpus/**'
+
+jobs:
+  eval:
+    runs-on: ubuntu-latest
+    services:
+      db:
+        image: pgvector/pgvector:pg16
+        env:
+          POSTGRES_USER: rag
+          POSTGRES_PASSWORD: rag
+          POSTGRES_DB: rag
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U rag -d rag"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 20
+    env:
+      DATABASE_URL: postgres://rag:rag@localhost:5432/rag
+      LOG_LEVEL: warn
+      EMBEDDING_CACHE_DIR: .cache/transformers
+      RERANK_BASE_URL: ''
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.28.5
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+
+      - name: Cache embedding model
+        uses: actions/cache@v4
+        with:
+          path: .cache/transformers
+          key: bge-m3-int8-v1
+
+      - name: Ingest corpus
+        run: pnpm ingest
+
+      - name: Evaluate
+        run: pnpm eval
+
+      - name: Compare with baseline
+        run: pnpm exec tsx scripts/check-baseline.ts
+
+      - name: Upload results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: eval-results
+          path: results/
+          retention-days: 14
