@@ -1,0 +1,21 @@
+{
+  "source": "results/results-2026-11-16T12-38-28-447Z.json",
+  "note": "CI fails if recall@10 drops more than 0.02 below these values (scripts/check-baseline.ts). Rerank is not in the baseline: CI has no rerank endpoint.",
+  "configs": {
+    "bm25": {
+      "recallAt10": 0.427,
+      "mrrAt10": 0.2345,
+      "ndcgAt10": 0.2791
+    },
+    "dense": {
+      "recallAt10": 0.82,
+      "mrrAt10": 0.6058,
+      "ndcgAt10": 0.6538
+    },
+    "hybrid": {
+      "recallAt10": 0.7667,
+      "mrrAt10": 0.5663,
+      "ndcgAt10": 0.6149
+    }
+  }
+}
