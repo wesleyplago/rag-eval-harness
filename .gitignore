@@ -4,8 +4,6 @@ dist/
 .env.*
 !.env.example
 .cache/
-results/*.json
-!results/.gitkeep
 coverage/
 *.log
 .DS_Store
