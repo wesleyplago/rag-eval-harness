@@ -30,7 +30,8 @@ const EnvSchema = z.object({
 
   TOP_K: z.coerce.number().int().min(1).max(50).default(10),
   RRF_K: z.coerce.number().int().min(1).max(200).default(60),
-  ABSTAIN_THRESHOLD: z.coerce.number().min(0).max(1).default(0.42),
+  // Fallback only; per-config thresholds come from config/abstention.json. 0 = never abstain.
+  ABSTAIN_THRESHOLD: z.coerce.number().min(0).max(1).default(0),
 });
 
 export type Config = z.infer<typeof EnvSchema> & {

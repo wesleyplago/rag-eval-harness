@@ -28,7 +28,6 @@ services:
       EMBEDDING_MODEL: Xenova/bge-m3
       EMBEDDING_DIM: 1024
       EMBEDDING_CACHE_DIR: /data/cache/transformers
-      ABSTAIN_THRESHOLD: 0.42
     ports:
       - "${API_PORT:-3000}:3000"
     volumes:

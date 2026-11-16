@@ -23,6 +23,7 @@ RUN groupadd --system app && useradd --system --gid app --home /app app \
 COPY --from=build --chown=app:app /app/node_modules ./node_modules
 COPY --from=build --chown=app:app /app/dist ./dist
 COPY --chown=app:app package.json ./
+COPY --chown=app:app config ./config
 USER app
 EXPOSE 3000
 CMD ["node", "dist/cli/serve.js"]
