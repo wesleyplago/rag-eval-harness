@@ -35,6 +35,11 @@ const results = JSON.parse(await readFile(join(dir, latest), 'utf8')) as RunResu
 let failed = false;
 for (const [name, expected] of Object.entries(baseline.configs)) {
   const current = results.configs[name];
+  if (current?.status === 'skipped') {
+    // CI has no rerank endpoint; a skipped config is reported, not compared.
+    console.log(`- ${name}: skipped in this run, not compared`);
+    continue;
+  }
   if (current?.status !== 'ok' || !current.metrics) {
     console.error(`✗ ${name}: missing from the eval run`);
     failed = true;
