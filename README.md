@@ -13,8 +13,6 @@ including the results that are bad.
 
 <!--RESULTS_TABLE-->
 
-<!--RESULTS_NOTES-->
-
 ## How the numbers were produced
 
 - **Corpus:** 10 public normative acts and one technical manual from the Banco

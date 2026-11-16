@@ -132,11 +132,14 @@ const runConfig = async (
   retriever: Retriever | null,
   questions: GoldenQuestion[],
   threshold: number,
+  skipReason?: string,
 ): Promise<ConfigResult> => {
-  if (!retriever) {
+  if (!retriever || skipReason) {
     return {
       status: 'skipped',
-      reason: 'RERANK_BASE_URL/RERANK_MODEL not configured; hybrid+rerank depends on an LLM',
+      reason:
+        skipReason ??
+        'RERANK_BASE_URL/RERANK_MODEL not configured; hybrid+rerank depends on an LLM',
       model: 'not-configured',
       metrics: {
         overall: emptySlice(),
@@ -264,6 +267,29 @@ const buildRetriever = (name: ConfigName): Retriever | null => {
   });
 };
 
+/**
+ * A configured but unreachable reranker would make every call fall back to the
+ * hybrid order, and the eval would publish hybrid numbers under the rerank
+ * label. Probe once and skip the configuration instead.
+ */
+const probeReranker = async (): Promise<string | undefined> => {
+  const baseUrl = config.rerank.baseUrl?.replace(/\/$/, '');
+  if (!baseUrl) return undefined;
+  try {
+    const response = await fetch(`${baseUrl}/models`, {
+      signal: AbortSignal.timeout(5000),
+      headers: config.rerank.apiKey ? { authorization: `Bearer ${config.rerank.apiKey}` } : {},
+    });
+    if (response.status >= 500) return `rerank endpoint returned HTTP ${response.status}`;
+    return undefined;
+  } catch (error: unknown) {
+    logger.warn('rerank endpoint unreachable, skipping hybrid+rerank', {
+      error: error instanceof Error ? error.message : String(error),
+    });
+    return 'rerank endpoint configured but unreachable at eval time';
+  }
+};
+
 export const runEval = async (): Promise<EvalResults> => {
   const questions = await listGoldenQuestions();
   if (questions.length === 0)
@@ -275,11 +301,13 @@ export const runEval = async (): Promise<EvalResults> => {
   for (const name of CONFIG_NAMES) {
     logger.info('running config', { config: name });
     const retriever = buildRetriever(name);
+    const skipReason = retriever && name === 'hybrid+rerank' ? await probeReranker() : undefined;
     const result = await runConfig(
       name,
       retriever,
       questions,
       thresholds[name] ?? config.ABSTAIN_THRESHOLD,
+      skipReason,
     );
     configs[name] = result;
     if (result.status === 'ok') {
@@ -380,7 +408,8 @@ export const renderTable = (results: EvalResults): string => {
   const rows = CONFIG_NAMES.map((name) => {
     const item = results.configs[name];
     if (!item || item.status === 'skipped') {
-      return `| ${name} | TODO — not measured yet | TODO — not measured yet | TODO — not measured yet | n/a | n/a | n/a |`;
+      const cell = item ? 'skipped' : 'TODO — not measured yet';
+      return `| ${name} | ${cell} | ${cell} | ${cell} | ${cell} | ${cell} | ${cell} |`;
     }
     return `| ${name} | ${fmt(item.metrics.overall.recallAt10)} | ${fmt(item.metrics.overall.mrrAt10)} | ${fmt(
       item.metrics.overall.ndcgAt10,
