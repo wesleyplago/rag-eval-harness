@@ -1,4 +1,5 @@
 import { Hono } from 'hono';
+import { cors } from 'hono/cors';
 import { z } from 'zod';
 import { decideAbstention } from '../retrieval/abstain.js';
 import type { RetrievalResult } from '../retrieval/types.js';
@@ -22,8 +23,20 @@ const SearchBody = z.object({
   k: z.coerce.number().int().min(1).max(50).optional(),
 });
 
-export const createApp = (service: SearchService): Hono => {
+export interface AppOptions {
+  /** Browser origins allowed to call the API (e.g. the portfolio microfrontend). */
+  corsOrigins?: string[];
+}
+
+export const createApp = (service: SearchService, options: AppOptions = {}): Hono => {
   const app = new Hono();
+  const origins = options.corsOrigins ?? [];
+  if (origins.length > 0) {
+    app.use(
+      '*',
+      cors({ origin: origins, allowMethods: ['GET', 'POST'], allowHeaders: ['content-type'] }),
+    );
+  }
 
   app.get('/health', (context) => {
     const readiness = service.readiness();

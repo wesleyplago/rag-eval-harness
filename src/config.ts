@@ -9,6 +9,16 @@ const optionalUrl = z
 const EnvSchema = z.object({
   DATABASE_URL: z.string().min(1).default('postgres://rag:rag@localhost:5433/rag'),
   PORT: z.coerce.number().int().positive().default(3000),
+  // Comma-separated browser origins allowed to call the API (portfolio host and remote).
+  CORS_ORIGINS: z
+    .string()
+    .default('http://localhost:5180,http://localhost:5182')
+    .transform((value) =>
+      value
+        .split(',')
+        .map((origin) => origin.trim())
+        .filter(Boolean),
+    ),
   LOG_LEVEL: z.enum(['debug', 'info', 'warn', 'error']).default('info'),
 
   EMBEDDING_PROVIDER: z.literal('local').default('local'),

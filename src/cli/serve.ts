@@ -57,7 +57,7 @@ const boot = async (): Promise<void> => {
     });
   }
 
-  const app = createApp(service);
+  const app = createApp(service, { corsOrigins: config.CORS_ORIGINS });
   serve({ fetch: app.fetch, port: config.PORT }, (info) => {
     logger.info('api listening', { port: info.port, ready });
   });

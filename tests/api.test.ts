@@ -66,3 +66,13 @@ describe('POST /search', () => {
     expect(body).toMatchObject({ status: 'ok', ready: true });
   });
 });
+
+describe('CORS', () => {
+  it('allows configured origins and ignores others', async () => {
+    const app = createApp(fakeService, { corsOrigins: ['http://localhost:5182'] });
+    const allowed = await app.request('/health', { headers: { origin: 'http://localhost:5182' } });
+    expect(allowed.headers.get('access-control-allow-origin')).toBe('http://localhost:5182');
+    const other = await app.request('/health', { headers: { origin: 'http://evil.example' } });
+    expect(other.headers.get('access-control-allow-origin')).toBeNull();
+  });
+});
