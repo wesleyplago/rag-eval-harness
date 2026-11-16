@@ -274,14 +274,30 @@ const buildRetriever = (name: ConfigName): Retriever | null => {
  */
 const probeReranker = async (): Promise<string | undefined> => {
   const baseUrl = config.rerank.baseUrl?.replace(/\/$/, '');
-  if (!baseUrl) return undefined;
+  if (!baseUrl || !config.rerank.model) return undefined;
+  // A real one-token completion: some gateways answer /models while every
+  // completion fails upstream.
   try {
-    const response = await fetch(`${baseUrl}/models`, {
-      signal: AbortSignal.timeout(5000),
-      headers: config.rerank.apiKey ? { authorization: `Bearer ${config.rerank.apiKey}` } : {},
+    const response = await fetch(`${baseUrl}/chat/completions`, {
+      method: 'POST',
+      signal: AbortSignal.timeout(30_000),
+      headers: {
+        'content-type': 'application/json',
+        ...(config.rerank.apiKey ? { authorization: `Bearer ${config.rerank.apiKey}` } : {}),
+      },
+      body: JSON.stringify({
+        model: config.rerank.model,
+        max_tokens: 5,
+        messages: [{ role: 'user', content: 'Reply with: ok' }],
+      }),
     });
-    if (response.status >= 500) return `rerank endpoint returned HTTP ${response.status}`;
-    return undefined;
+    if (response.ok) return undefined;
+    const body = (await response.text()).slice(0, 200);
+    logger.warn('rerank endpoint rejected the probe, skipping hybrid+rerank', {
+      status: response.status,
+      body,
+    });
+    return `rerank endpoint rejected a probe request (HTTP ${response.status})`;
   } catch (error: unknown) {
     logger.warn('rerank endpoint unreachable, skipping hybrid+rerank', {
       error: error instanceof Error ? error.message : String(error),
