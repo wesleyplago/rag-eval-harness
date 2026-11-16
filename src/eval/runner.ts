@@ -448,11 +448,12 @@ export const renderSliceTable = (results: EvalResults): string => {
       const metrics = item.metrics.byCategory[slice] ?? emptySlice();
       const precision = slice === 'unanswerable' ? item.abstention.precision : null;
       const recall = slice === 'unanswerable' ? item.abstention.recall : null;
-      rows.push(
-        `| ${slice} | ${name} | ${fmt(metrics.recallAt10)} | ${fmt(metrics.mrrAt10)} | ${fmt(metrics.ndcgAt10)} | ${fmt(
-          precision,
-        )} | ${fmt(recall)} |`,
-      );
+      // Unanswerable questions have no expected chunks: retrieval metrics do not apply.
+      const retrieval =
+        slice === 'unanswerable'
+          ? 'n/a | n/a | n/a'
+          : `${fmt(metrics.recallAt10)} | ${fmt(metrics.mrrAt10)} | ${fmt(metrics.ndcgAt10)}`;
+      rows.push(`| ${slice} | ${name} | ${retrieval} | ${fmt(precision)} | ${fmt(recall)} |`);
     }
   }
   return [header, separator, ...rows].join('\n');
