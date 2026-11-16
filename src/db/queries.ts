@@ -240,7 +240,8 @@ export const identifierSearch = async (
   mode: 'digits' | 'alphanumeric',
   k: number,
 ): Promise<ScoredChunk[]> => {
-  const normalized = mode === 'digits' ? value.replace(/\D/g, '') : value.toUpperCase();
+  const normalized =
+    mode === 'digits' ? value.replace(/\D/g, '') : value.toUpperCase().replace(/[^A-Z0-9]/g, '');
   if (normalized.length === 0) return [];
   const result = await db().raw<{ rows: Array<{ id: number; score: string }> }>(
     `
@@ -249,7 +250,7 @@ export const identifierSearch = async (
     WHERE (
       CASE WHEN ? = 'digits'
         THEN regexp_replace(content, '[^0-9]', '', 'g')
-        ELSE upper(content)
+        ELSE regexp_replace(upper(content), '[^A-Z0-9]', '', 'g')
       END
     ) LIKE '%' || ? || '%'
     ORDER BY length(content) ASC

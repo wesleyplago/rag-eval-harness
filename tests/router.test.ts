@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { detectIdentifier } from '../src/retrieval/router.js';
+import { cnpjCheckDigits, detectIdentifier } from '../src/retrieval/router.js';
 
 describe('detectIdentifier', () => {
   it('detects a 47-digit linha digitável with separators', () => {
@@ -21,6 +21,26 @@ describe('detectIdentifier', () => {
       value: '00038166000105',
     });
     expect(detectIdentifier('cnpj 00038166000105')).toMatchObject({ kind: 'cnpj' });
+  });
+
+  it('detects an alphanumeric CNPJ, bare or masked, and validates check digits', () => {
+    expect(detectIdentifier('O valor 12ABC34501DE35 é qual tipo de chave Pix?')).toEqual({
+      kind: 'cnpj',
+      value: '12ABC34501DE35',
+      mode: 'alphanumeric',
+    });
+    expect(detectIdentifier('cnpj 12.abc.345/01de-35')).toMatchObject({
+      kind: 'cnpj',
+      value: '12ABC34501DE35',
+    });
+    // Same shape, wrong check digits: not a CNPJ.
+    expect(detectIdentifier('código 12ABC34501DE99')).toBeNull();
+    expect(detectIdentifier('O identificador ABCDEFGH123412')).toBeNull();
+  });
+
+  it('computes check digits that also hold for numeric CNPJs', () => {
+    expect(cnpjCheckDigits('12ABC34501DE')).toBe('35');
+    expect(cnpjCheckDigits('000381660001')).toBe('05');
   });
 
   it('detects nosso número when labelled', () => {

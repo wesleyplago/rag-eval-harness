@@ -39,3 +39,13 @@ identifier slice and reports the paired bootstrap difference.
 - The corpus currently contains TXID and CNPJ examples (PIX manual) but no
   linha digitável example; the router's linha digitável path is covered by unit
   tests, not by the golden set. This is stated in the README.
+
+## Update 2026-11-16: alphanumeric CNPJ
+
+The failure gallery showed three identifier questions citing `12ABC34501DE35`,
+the alphanumeric CNPJ format (IN RFB 2.229/2024), which the router did not detect.
+It now accepts 12 characters in `[A-Z0-9]` plus 2 numeric check digits, bare or
+masked, and only when the modulo-11 check digits (character value = ASCII − 48)
+are valid, so ordinary mixed tokens do not trigger an exact lookup. Alphanumeric
+lookups ignore punctuation on both sides, so a masked query matches bare text.
+Identifier slice, hybrid: recall@10 0.850 → 1.000 (`pnpm eval`).
