@@ -1,0 +1,6 @@
+{
+  "bm25": 2,
+  "dense": 0.536,
+  "hybrid": 0.0311,
+  "hybrid+rerank": 0.0311
+}
