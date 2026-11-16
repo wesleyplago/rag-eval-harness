@@ -183,6 +183,11 @@ curl -s localhost:3000/search -H 'content-type: application/json' \
   -d '{"query":"Como funciona o bloqueio cautelar no Pix?","k":5}' | jq
 ```
 
+On the published data this example **abstains** (`"abstained": true`, top fused
+score 0.0302 vs the calibrated hybrid threshold 0.0311 in
+[`config/abstention.json`](config/abstention.json)): one of the 14% false
+abstentions in the abstention table, left as is rather than hand-tuned away.
+
 **macOS note:** `onnxruntime-node` ships an ad-hoc-signed native binary that some
 hardened Node builds refuse to load. Symptom: `ERR_DLOPEN_FAILED ... different
 Team IDs`. Fix (already applied in this workspace):
