@@ -1,6 +1,6 @@
 # Evaluation report
 
-- Run: `2026-11-16T12-38-28-447Z` (2026-11-16T12:38:41.931Z)
+- Run: `2026-11-16T18-42-33-124Z` (2026-11-16T18:42:49.047Z)
 - Corpus: 10 documents, 386 chunks
 - Golden set: 140 questions (80 semantic, 20 identifier, 20 temporal, 20 unanswerable)
 - Retrieval metric: recall/MRR/nDCG at 10, binary relevance on expected_chunk_ids
@@ -10,9 +10,9 @@
 
 | config | recall@10 | MRR@10 | nDCG@10 | $/1k | p50 | p95 |
 | --- | --- | --- | --- | --- | --- | --- |
-| bm25 | 0.427 | 0.234 | 0.279 | $0.00 | 3 ms | 6 ms |
-| dense | 0.820 | 0.606 | 0.654 | $0.00 | 30 ms | 48 ms |
-| hybrid | 0.767 | 0.566 | 0.615 | $0.00 | 31 ms | 48 ms |
+| bm25 | 0.427 | 0.234 | 0.279 | $0.00 | 4 ms | 6 ms |
+| dense | 0.820 | 0.606 | 0.654 | $0.00 | 29 ms | 56 ms |
+| hybrid | 0.792 | 0.602 | 0.648 | $0.00 | 31 ms | 79 ms |
 | hybrid+rerank | skipped | skipped | skipped | skipped | skipped | skipped |
 
 ## By slice
@@ -24,7 +24,7 @@
 | semantic | hybrid | 0.738 | 0.493 | 0.552 | n/a | n/a |
 | identifier | bm25 | 0.062 | 0.025 | 0.025 | n/a | n/a |
 | identifier | dense | 0.470 | 0.170 | 0.215 | n/a | n/a |
-| identifier | hybrid | 0.850 | 0.785 | 0.801 | n/a | n/a |
+| identifier | hybrid | 1.000 | 1.000 | 1.000 | n/a | n/a |
 | temporal | bm25 | 0.450 | 0.283 | 0.323 | n/a | n/a |
 | temporal | dense | 0.900 | 0.621 | 0.688 | n/a | n/a |
 | temporal | hybrid | 0.800 | 0.642 | 0.681 | n/a | n/a |
@@ -38,7 +38,7 @@
 | --- | --- | --- | --- |
 | bm25 | 0.427 [0.335, 0.518] | 0.234 [0.174, 0.299] | 0.279 [0.212, 0.345] |
 | dense | 0.820 [0.749, 0.883] | 0.606 [0.534, 0.676] | 0.654 [0.584, 0.718] |
-| hybrid | 0.767 [0.683, 0.842] | 0.566 [0.487, 0.644] | 0.615 [0.538, 0.688] |
+| hybrid | 0.792 [0.717, 0.858] | 0.602 [0.523, 0.677] | 0.648 [0.575, 0.719] |
 
 ## Cost per 1,000 queries
 
@@ -59,7 +59,7 @@
 ## Router ablation (identifier slice)
 
 - hybrid without exact lookup: recall@10 0.236
-- hybrid with exact lookup: recall@10 0.850
+- hybrid with exact lookup: recall@10 1.000
 
 ## Failure gallery (10 queries still wrong on hybrid)
 
@@ -123,36 +123,6 @@
 
 **Hypothesis:** right document, wrong section: sibling sections share vocabulary and outrank the expected chunk
 
-### q091 — identifier
-
-**Question:** O valor 12ABC34501DE35 corresponde a qual tipo de chave Pix?
-
-**Expected chunk ids:** 126412780 (pix-manual › 00. GUI 14 M br.gov.bcb.pix)
-
-**Retrieved top-3:** 1753162838 (pix-regulamento › CAPÍTULO XIII — DO DICT > Seção III — Das funcionalidades > Subseção II — Da exclusão das chaves Pix); 1229062689 (pix-regulamento › CAPÍTULO XIII — DO DICT > Seção III — Das funcionalidades > Subseção I — Do registro das chaves Pix e da vinculação a contas transacionais); 1512774325 (pix-regulamento › CAPÍTULO XIII — DO DICT > Seção III — Das funcionalidades > Subseção IV — Da portabilidade das chaves Pix)
-
-**Hypothesis:** identifier not detected, or not literally present in the expected chunk
-
-### q092 — identifier
-
-**Question:** Qual é o exemplo de CNPJ alfanumérico 12ABC34501DE35 aceito como chave Pix?
-
-**Expected chunk ids:** 126412780 (pix-manual › 00. GUI 14 M br.gov.bcb.pix)
-
-**Retrieved top-3:** 1753162838 (pix-regulamento › CAPÍTULO XIII — DO DICT > Seção III — Das funcionalidades > Subseção II — Da exclusão das chaves Pix); 1229062689 (pix-regulamento › CAPÍTULO XIII — DO DICT > Seção III — Das funcionalidades > Subseção I — Do registro das chaves Pix e da vinculação a contas transacionais); 1512774325 (pix-regulamento › CAPÍTULO XIII — DO DICT > Seção III — Das funcionalidades > Subseção IV — Da portabilidade das chaves Pix)
-
-**Hypothesis:** identifier not detected, or not literally present in the expected chunk
-
-### q094 — identifier
-
-**Question:** O CNPJ alfanumérico 12ABC34501DE35 aparece em qual contexto no manual do Pix?
-
-**Expected chunk ids:** 126412780 (pix-manual › 00. GUI 14 M br.gov.bcb.pix)
-
-**Retrieved top-3:** 1753162838 (pix-regulamento › CAPÍTULO XIII — DO DICT > Seção III — Das funcionalidades > Subseção II — Da exclusão das chaves Pix); 1229062689 (pix-regulamento › CAPÍTULO XIII — DO DICT > Seção III — Das funcionalidades > Subseção I — Do registro das chaves Pix e da vinculação a contas transacionais); 300457459 (pix-regulamento › CAPÍTULO V — DA INICIAÇÃO DE UM PIX > Seção III — Dos mecanismos para envio ou disponibilização prévia de informações para fins — de iniciação de um Pix)
-
-**Hypothesis:** identifier not detected, or not literally present in the expected chunk
-
 ### q111 — temporal
 
 **Question:** A partir de quando os participantes do Pix passaram a não poder estabelecer limites para o número de transações que poderiam ser enviadas ou recebidas pelos usuários finais?
@@ -162,4 +132,34 @@
 **Retrieved top-3:** 1148756691 (pix-regulamento › CAPÍTULO V — DA INICIAÇÃO DE UM PIX > Seção I — Disposições gerais); 87998317 (pix-regulamento › CAPÍTULO XV — DA COBRANÇA DE TARIFAS AOS USUÁRIOS FINAIS); 180782179 (pix-regulamento › CAPÍTULO X — DA AUTORIZAÇÃO PARA INICIAÇÃO E DA REJEIÇÃO DE TRANSAÇÕES)
 
 **Hypothesis:** right document, wrong section: sibling sections share vocabulary and outrank the expected chunk
+
+### q118 — temporal
+
+**Question:** A partir de quando o Mecanismo Especial de Devolução para o Pix passou a incluir casos de autorização indevida de transações do Pix Automático?
+
+**Expected chunk ids:** 1844161234 (pix-regulamento › CAPÍTULO XI — DA DEVOLUÇÃO DE TRANSAÇÕES > Seção I)
+
+**Retrieved top-3:** 57683669 (pix-regulamento › CAPÍTULO XI — DA DEVOLUÇÃO DE TRANSAÇÕES > Seção II — Do Mecanismo Especial de Devolução); 262386968 (pix-manual › 6. Casos de Uso > 6.4. Pix Automático); 846327789 (pix-regulamento › CAPÍTULO XI — DA DEVOLUÇÃO DE TRANSAÇÕES > Seção I)
+
+**Hypothesis:** right document, wrong section: sibling sections share vocabulary and outrank the expected chunk
+
+### q007 — semantic
+
+**Question:** Quais são as comunicações que o instituidor de um arranjo de pagamento deve fazer ao Banco Central do Brasil e aos participantes em caso de ocorrência de eventos críticos?
+
+**Expected chunk ids:** 321425308 (arranjos-pagamento › CAPÍTULO VI — DO GERENCIAMENTO DE RISCOS > Seção I — Da estrutura de gerenciamento — contínuo e integrado de riscos dos arranjos de pagamento)
+
+**Retrieved top-3:** —
+
+**Hypothesis:** abstained: top fused score below the calibrated threshold
+
+### q008 — semantic
+
+**Question:** Qual é a diferença entre PSP Pagador e PSP Recebedor no contexto do Pix?
+
+**Expected chunk ids:** 332588723 (pix-manual › 4. Conceitos gerais)
+
+**Retrieved top-3:** —
+
+**Hypothesis:** abstained: top fused score below the calibrated threshold
 

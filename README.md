@@ -12,13 +12,13 @@ the results that are bad, and the one that is not measured yet (rerank).
 ## Results
 
 <!--RESULTS_TABLE-->
-Run `2026-11-16T12-38-28-447Z` · 10 documents · 386 chunks · 140 questions · k=10. Raw data: [`results/results-2026-11-16T12-38-28-447Z.json`](results/results-2026-11-16T12-38-28-447Z.json). Produced by `pnpm eval`; this block is written by `pnpm report`.
+Run `2026-11-16T18-42-33-124Z` · 10 documents · 386 chunks · 140 questions · k=10. Raw data: [`results/results-2026-11-16T18-42-33-124Z.json`](results/results-2026-11-16T18-42-33-124Z.json). Produced by `pnpm eval`; this block is written by `pnpm report`.
 
 | config | recall@10 | MRR@10 | nDCG@10 | $/1k | p50 | p95 |
 | --- | --- | --- | --- | --- | --- | --- |
-| bm25 | 0.427 | 0.234 | 0.279 | $0.00 | 3 ms | 6 ms |
-| dense | 0.820 | 0.606 | 0.654 | $0.00 | 30 ms | 48 ms |
-| hybrid | 0.767 | 0.566 | 0.615 | $0.00 | 31 ms | 48 ms |
+| bm25 | 0.427 | 0.234 | 0.279 | $0.00 | 4 ms | 6 ms |
+| dense | 0.820 | 0.606 | 0.654 | $0.00 | 29 ms | 56 ms |
+| hybrid | 0.792 | 0.602 | 0.648 | $0.00 | 31 ms | 79 ms |
 | hybrid+rerank | skipped | skipped | skipped | skipped | skipped | skipped |
 
 `hybrid+rerank` was skipped: rerank endpoint rejected a probe request (HTTP 400).
@@ -32,7 +32,7 @@ Run `2026-11-16T12-38-28-447Z` · 10 documents · 386 chunks · 140 questions ·
 | semantic | hybrid | 0.738 | 0.493 | 0.552 | n/a | n/a |
 | identifier | bm25 | 0.062 | 0.025 | 0.025 | n/a | n/a |
 | identifier | dense | 0.470 | 0.170 | 0.215 | n/a | n/a |
-| identifier | hybrid | 0.850 | 0.785 | 0.801 | n/a | n/a |
+| identifier | hybrid | 1.000 | 1.000 | 1.000 | n/a | n/a |
 | temporal | bm25 | 0.450 | 0.283 | 0.323 | n/a | n/a |
 | temporal | dense | 0.900 | 0.621 | 0.688 | n/a | n/a |
 | temporal | hybrid | 0.800 | 0.642 | 0.681 | n/a | n/a |
@@ -48,7 +48,7 @@ Run `2026-11-16T12-38-28-447Z` · 10 documents · 386 chunks · 140 questions ·
 | dense | 0.826 | 0.950 | 0.033 |
 | hybrid | 0.452 | 0.700 | 0.142 |
 
-**Identifier router** (identifier slice, hybrid): recall@10 0.236 without exact lookup → 0.850 with it (paired difference 0.614, 95% CI [0.415, 0.813]).
+**Identifier router** (identifier slice, hybrid): recall@10 0.236 without exact lookup → 1.000 with it (paired difference 0.764, 95% CI [0.583, 0.920]).
 <!--/RESULTS_TABLE-->
 
 **Reading it** (numbers from the block above and
@@ -56,11 +56,15 @@ Run `2026-11-16T12-38-28-447Z` · 10 documents · 386 chunks · 140 questions ·
 
 - **BM25 → dense is the big step:** recall@10 0.427 → 0.820 on the 120 answerable
   questions, with non-overlapping CIs ([0.335, 0.518] vs [0.749, 0.883]).
-- **Hybrid (RRF) does not beat dense here.** Overall recall@10 is 0.767 vs 0.820
+- **Hybrid (RRF) does not beat dense here.** Overall recall@10 is 0.792 vs 0.820
   (CIs overlap), and on the semantic slice fusion costs about 15 points
   (0.887 → 0.738): BM25 is weak on this corpus and RRF gives its ranks equal weight.
 - **Hybrid wins only on identifiers, and that is the router, not the fusion:**
-  identifier recall@10 0.236 without exact lookup → 0.850 with it.
+  identifier recall@10 0.236 without exact lookup → 1.000 with it. Read the 1.000
+  with care: identifier questions were generated so that the identifier appears
+  literally in the expected chunk, so this slice measures whether the router
+  fires, not retrieval in general. Before alphanumeric CNPJs were routed it was
+  0.850 ([`results/results-2026-11-16T12-38-28-447Z.json`](results/results-2026-11-16T12-38-28-447Z.json)).
 - **Rerank is not measured.** The rerank endpoint was unavailable for this run, so
   the eval skipped it instead of reporting fallback numbers. An earlier run
   ([`results/results-2026-10-23T20-31-37-711Z.json`](results/results-2026-10-23T20-31-37-711Z.json))
@@ -207,7 +211,7 @@ from the latest run by [`src/eval/report.ts`](src/eval/report.ts); the full list
 with retrieved chunk ids is in [`results/REPORT.md`](results/REPORT.md).
 
 <!--FAILURE_GALLERY-->
-From run `2026-11-16T12-38-28-447Z`, config `hybrid`. Expected vs retrieved sections are read from the database; the hypothesis column is a heuristic in [`src/eval/report.ts`](src/eval/report.ts), not a diagnosis.
+From run `2026-11-16T18-42-33-124Z`, config `hybrid`. Expected vs retrieved sections are read from the database; the hypothesis column is a heuristic in [`src/eval/report.ts`](src/eval/report.ts), not a diagnosis.
 
 | id | slice | question | expected section | hybrid top-1 | hypothesis |
 | --- | --- | --- | --- | --- | --- |
@@ -217,21 +221,22 @@ From run `2026-11-16T12-38-28-447Z`, config `hybrid`. Expected vs retrieved sect
 | q066 | semantic | Quais são os requisitos que uma instituição financeira deve cumprir para que sua política seja considerada válida perante o Banco Central? | pld-ft › CAPÍTULO II | pix-regulamento › CAPÍTULO VII — DA PARTICIPAÇÃO > Seção II — Dos requisitos e dos procedimentos para a participação no Pix | wrong document: another norm covers the same topic and wins on both BM25 and dense |
 | q077 | semantic | Quais são os campos de uma recorrência Pix que o usuário recebedor pode alterar após ela ter sido confirmada pelo usuário pagador? | pix-manual › ANEXO IV – Pix Automático > 3.3. Estados da CobR > 3.3.5. Agendamento rejeitado pelo PSP Pagador | pix-manual › 6. Casos de Uso > 6.4. Pix Automático | right document, wrong section: sibling sections share vocabulary and outrank the expected chunk |
 | q080 | semantic | Quais foram as datas em que o DICT entrou em funcionamento e em quais modalidades operacionais? | pix-regulamento › Preâmbulo | pix-regulamento › CAPÍTULO XIII — DO DICT > Seção II — Do acesso | right document, wrong section: sibling sections share vocabulary and outrank the expected chunk |
-| q091 | identifier | O valor 12ABC34501DE35 corresponde a qual tipo de chave Pix? | pix-manual › 00. GUI 14 M br.gov.bcb.pix | pix-regulamento › CAPÍTULO XIII — DO DICT > Seção III — Das funcionalidades > Subseção II — Da exclusão das chaves Pix | identifier not detected, or not literally present in the expected chunk |
-| q092 | identifier | Qual é o exemplo de CNPJ alfanumérico 12ABC34501DE35 aceito como chave Pix? | pix-manual › 00. GUI 14 M br.gov.bcb.pix | pix-regulamento › CAPÍTULO XIII — DO DICT > Seção III — Das funcionalidades > Subseção II — Da exclusão das chaves Pix | identifier not detected, or not literally present in the expected chunk |
-| q094 | identifier | O CNPJ alfanumérico 12ABC34501DE35 aparece em qual contexto no manual do Pix? | pix-manual › 00. GUI 14 M br.gov.bcb.pix | pix-regulamento › CAPÍTULO XIII — DO DICT > Seção III — Das funcionalidades > Subseção II — Da exclusão das chaves Pix | identifier not detected, or not literally present in the expected chunk |
 | q111 | temporal | A partir de quando os participantes do Pix passaram a não poder estabelecer limites para o número de transações que poderiam ser enviadas ou recebidas pelos usuários finais? | pix-regulamento › CAPÍTULO X — DA AUTORIZAÇÃO PARA INICIAÇÃO E DA REJEIÇÃO DE TRANSAÇÕES | pix-regulamento › CAPÍTULO V — DA INICIAÇÃO DE UM PIX > Seção I — Disposições gerais | right document, wrong section: sibling sections share vocabulary and outrank the expected chunk |
+| q118 | temporal | A partir de quando o Mecanismo Especial de Devolução para o Pix passou a incluir casos de autorização indevida de transações do Pix Automático? | pix-regulamento › CAPÍTULO XI — DA DEVOLUÇÃO DE TRANSAÇÕES > Seção I | pix-regulamento › CAPÍTULO XI — DA DEVOLUÇÃO DE TRANSAÇÕES > Seção II — Do Mecanismo Especial de Devolução | right document, wrong section: sibling sections share vocabulary and outrank the expected chunk |
+| q007 | semantic | Quais são as comunicações que o instituidor de um arranjo de pagamento deve fazer ao Banco Central do Brasil e aos participantes em caso de ocorrência de eventos críticos? | arranjos-pagamento › CAPÍTULO VI — DO GERENCIAMENTO DE RISCOS > Seção I — Da estrutura de gerenciamento — contínuo e integrado de riscos dos arranjos de pagamento | (abstained) | abstained: top fused score below the calibrated threshold |
+| q008 | semantic | Qual é a diferença entre PSP Pagador e PSP Recebedor no contexto do Pix? | pix-manual › 4. Conceitos gerais | (abstained) | abstained: top fused score below the calibrated threshold |
 <!--/FAILURE_GALLERY-->
 
 What the gallery shows, checked by reading the chunks:
 
-- **Alphanumeric CNPJ is not routed.** q091/q092/q094 cite `12ABC34501DE35`, the
-  alphanumeric CNPJ format; [`src/retrieval/router.ts`](src/retrieval/router.ts)
-  only detects the 14-digit numeric form, so these questions go to fusion and
-  miss. A concrete router bug, not a retrieval limit.
+- **Fixed since the previous run: alphanumeric CNPJ.** q091/q092/q094 cite
+  `12ABC34501DE35`; the router only knew the 14-digit numeric form, so they went to
+  fusion and missed. [`src/retrieval/router.ts`](src/retrieval/router.ts) now
+  detects the alphanumeric form (IN RFB 2.229/2024) with check-digit validation,
+  and all three hit. No failure left in the gallery is an identifier question.
 - **Two norms on the same topic compete.** Resolutions BCB 150 and BCB 522 both
   cover payment arrangements (q018, q039); each question retrieves the other one.
-- **Sibling sections of one long act** (q011, q077, q080, q111): the right document,
+- **Sibling sections of one long act** (q011, q077, q080, q111, q118): the right document,
   a different chapter with the same vocabulary.
 - **Some questions are underspecified.** q066 ("a política" of "uma instituição
   financeira") could be answered by several norms; this is a golden-set problem
@@ -254,8 +259,9 @@ What the gallery shows, checked by reading the chunks:
   not sufficient. Faithfulness/generation is deliberately out of scope, but a
   reader should not confuse this table with end-to-end RAG quality.
 - **Route the identifier formats that exist now, not the ones I remembered.** The
-  alphanumeric CNPJ is in the corpus and the router missed it; the identifier
-  regexes should be generated from the corpus, not from memory.
+  alphanumeric CNPJ was in the corpus and the first router missed it (fixed after
+  the failure gallery exposed it); identifier patterns should be inventoried from
+  the corpus, not written from memory.
 - **Make rerank runs reproducible without a third-party gateway.** The first rerank
   run went through a local gateway that later stopped working; the measured row was
   lost with it. A pinned API with recorded responses would keep it re-runnable.
