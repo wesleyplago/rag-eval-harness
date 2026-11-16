@@ -25,10 +25,15 @@ deterministic, costs $0 per query, and keeps the repo runnable offline after the
 one-time model download (~570 MB, cached in `.cache/transformers`).
 
 **Rerank:** an OpenAI-compatible chat endpoint configured by
-`RERANK_BASE_URL` / `RERANK_MODEL` / `RERANK_API_KEY`. In this environment it is
-served by a local 9router instance backed by Kiro (`kr/claude-haiku-4.5`). The
-code does not know about Kiro: it speaks the OpenAI chat-completions protocol, so
-any compatible provider works.
+`RERANK_BASE_URL` / `RERANK_MODEL` / `RERANK_API_KEY`. The first run
+(2026-10-23) went through a local OpenAI-compatible gateway serving Claude Haiku
+4.5; that gateway later stopped accepting requests, so the published run reports
+`hybrid+rerank` as skipped. The code only speaks the OpenAI chat-completions
+protocol, so any compatible provider works.
+
+Before running rerank, the eval sends one real completion as a probe. A gateway
+that lists models but fails every completion would otherwise turn every call
+into a fallback and publish hybrid numbers under the rerank label.
 
 Design rules:
 
