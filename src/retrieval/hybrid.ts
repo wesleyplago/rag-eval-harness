@@ -94,7 +94,6 @@ export class HybridRetriever implements Retriever {
     const exact = await identifierSearch(identifier.value, identifier.mode, k);
     if (exact.length === 0) {
       // The identifier is not in the corpus: do not pretend. Fall back to fusion.
-      this.counters.rerankFallbacks += 1;
       return fused;
     }
     const seen = new Set(exact.map((item) => item.chunkId));

@@ -173,6 +173,44 @@ const callReranker = async (
 };
 
 /**
+ * Applies the reranker's order to the fused list.
+ *
+ * Ids the model invents or repeats are dropped; remaining slots are filled in
+ * fused order. Returns null when no usable id came back (caller falls back).
+ *
+ * Scores: the reranker decides the ORDER, not the CONFIDENCE. Position i gets
+ * the i-th best fused score, so the top-1 score is the same signal the hybrid
+ * configuration uses for abstention. Giving the reranked top-1 its own (lower)
+ * fused score made abstention fire on answerable questions it had not fired on
+ * for hybrid — 19 lost hits in the 2026-10-23 run, all from that bug.
+ */
+export const applyRerankOrder = (
+  fused: RetrievalResult[],
+  ids: number[],
+  k: number,
+): RetrievalResult[] | null => {
+  const allowed = new Set(fused.map((item) => item.chunkId));
+  const ranked: number[] = [];
+  const seen = new Set<number>();
+  for (const id of ids) {
+    if (allowed.has(id) && !seen.has(id)) {
+      ranked.push(id);
+      seen.add(id);
+    }
+  }
+  if (ranked.length === 0) return null;
+  for (const item of fused) {
+    if (ranked.length >= k) break;
+    if (!seen.has(item.chunkId)) {
+      ranked.push(item.chunkId);
+      seen.add(item.chunkId);
+    }
+  }
+  const scores = fused.map((item) => item.score).sort((a, b) => b - a);
+  return ranked.slice(0, k).map((chunkId, index) => ({ chunkId, score: scores[index] ?? 0 }));
+};
+
+/**
  * LLM listwise rerank: take the top-N fused candidates, ask the model for the
  * best k ids, validate the answer with Zod and drop ids that were never offered.
  * Any failure falls back to the fused order — the eval must never crash because
@@ -211,26 +249,17 @@ export class RerankRetriever implements Retriever {
       this.counters.rerankPromptTokens += result.inputTokens;
       this.counters.rerankCompletionTokens += result.outputTokens;
 
-      const allowed = new Set(candidates.map((candidate) => candidate.chunkId));
-      const ranked = result.ids.filter(
-        (id, index) => allowed.has(id) && result.ids.indexOf(id) === index,
+      const offered = new Set(candidates.map((candidate) => candidate.chunkId));
+      const reordered = applyRerankOrder(
+        fused.filter((item) => offered.has(item.chunkId)),
+        result.ids,
+        k,
       );
-      if (ranked.length === 0) {
+      if (reordered === null) {
         this.counters.rerankFallbacks += 1;
         return fallback();
       }
-      const seen = new Set(ranked);
-      for (const item of fused) {
-        if (ranked.length >= k) break;
-        if (!seen.has(item.chunkId)) {
-          ranked.push(item.chunkId);
-          seen.add(item.chunkId);
-        }
-      }
-      // Keep the fused scores: the reranker decides the order, but the score
-      // remains comparable with the hybrid configuration for abstention.
-      const fusedScore = new Map(fused.map((item) => [item.chunkId, item.score]));
-      return ranked.slice(0, k).map((id) => ({ chunkId: id, score: fusedScore.get(id) ?? 0 }));
+      return reordered;
     } catch (error: unknown) {
       this.counters.rerankFallbacks += 1;
       logger.warn('rerank failed, falling back to fused order', {
