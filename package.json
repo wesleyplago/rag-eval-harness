@@ -1,0 +1,46 @@
+{
+  "name": "rag-eval-harness",
+  "version": "0.1.0",
+  "private": true,
+  "description": "RAG over Brazilian payment regulation, measured: BM25 vs dense vs hybrid vs rerank.",
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "start": "node dist/cli/serve.js",
+    "db:migrate": "tsx src/cli/migrate.ts",
+    "ingest": "tsx src/cli/ingest.ts",
+    "ingest:refresh": "tsx src/cli/ingest.ts --refresh",
+    "eval": "tsx src/cli/eval.ts",
+    "eval:ablation": "tsx src/cli/eval.ts --ablation",
+    "report": "tsx src/cli/report.ts",
+    "serve": "tsx src/cli/serve.ts",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "lint": "biome check .",
+    "format": "biome check --write ."
+  },
+  "dependencies": {
+    "@hono/node-server": "^1.19.6",
+    "@huggingface/transformers": "^3.7.6",
+    "cheerio": "^1.1.2",
+    "dotenv": "^17.2.3",
+    "gpt-tokenizer": "^3.0.1",
+    "hono": "^4.10.6",
+    "knex": "^3.1.0",
+    "pg": "^8.16.3",
+    "zod": "^4.1.12"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.3.4",
+    "@types/node": "^24.10.1",
+    "@types/pg": "^8.15.6",
+    "tsx": "^4.20.6",
+    "typescript": "^5.9.3",
+    "vitest": "^4.0.8"
+  },
+  "packageManager": "pnpm@11.28.5"
+}

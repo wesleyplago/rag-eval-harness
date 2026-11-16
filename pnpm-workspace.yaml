@@ -1,0 +1,11 @@
+packages:
+  - '.'
+
+onlyBuiltDependencies:
+  - esbuild
+  - onnxruntime-node
+  - sharp
+  - protobufjs
+
+verifyDepsBeforeRun: false
+strictDepBuilds: false

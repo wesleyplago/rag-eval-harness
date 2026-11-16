@@ -1,0 +1,43 @@
+services:
+  db:
+    image: pgvector/pgvector:pg16
+    container_name: rag-eval-db
+    environment:
+      POSTGRES_USER: rag
+      POSTGRES_PASSWORD: rag
+      POSTGRES_DB: rag
+    ports:
+      - "5433:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U rag -d rag"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    restart: unless-stopped
+
+  api:
+    build: .
+    container_name: rag-eval-api
+    environment:
+      DATABASE_URL: postgres://rag:rag@db:5432/rag
+      PORT: 3000
+      LOG_LEVEL: info
+      EMBEDDING_PROVIDER: local
+      EMBEDDING_MODEL: Xenova/bge-m3
+      EMBEDDING_DIM: 1024
+      EMBEDDING_CACHE_DIR: /data/cache/transformers
+      ABSTAIN_THRESHOLD: 0.42
+    ports:
+      - "3000:3000"
+    volumes:
+      - model-cache:/data/cache
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  pgdata:
+  model-cache:
