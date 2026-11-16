@@ -2,13 +2,25 @@ import { readFile, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { chunkMarkdown } from '../src/ingest/chunk.js';
 import { readSources } from '../src/ingest/corpus.js';
-import { countTokens } from '../src/ingest/tokens.js';
 
 const sources = await readSources();
-const rows: Array<{ slug: string; title: string; url: string; published: string; retrieved: string; license: string; chunks: number; tokens: number; tables: number }> = [];
+const rows: Array<{
+  slug: string;
+  title: string;
+  url: string;
+  published: string;
+  retrieved: string;
+  license: string;
+  chunks: number;
+  tokens: number;
+  tables: number;
+}> = [];
 
 for (const source of sources) {
-  const markdown = await readFile(join(process.cwd(), 'data', 'corpus', `${source.slug}.md`), 'utf8');
+  const markdown = await readFile(
+    join(process.cwd(), 'data', 'corpus', `${source.slug}.md`),
+    'utf8',
+  );
   const chunks = chunkMarkdown(markdown, source.slug);
   rows.push({
     slug: source.slug,

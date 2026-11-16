@@ -1,7 +1,7 @@
-import { readdir, readFile, writeFile, mkdir } from 'node:fs/promises';
+import { mkdir, readdir, readFile, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
-import { calibrateThreshold, scoreAbstention } from '../src/retrieval/abstain.js';
 import { CONFIG_NAMES, type ConfigName, type EvalResults } from '../src/eval/runner.js';
+import { calibrateThreshold, scoreAbstention } from '../src/retrieval/abstain.js';
 
 const latestResults = async (): Promise<EvalResults> => {
   const dir = join(process.cwd(), 'results');
@@ -21,7 +21,7 @@ const main = async (): Promise<void> => {
 
   for (const name of CONFIG_NAMES) {
     const config = results.configs[name];
-    if (!config || config.status !== 'ok') continue;
+    if (config?.status !== 'ok') continue;
     const candidates = config.perQuestion
       .filter((question) => question.topScore !== null)
       .map((question) => ({
@@ -40,7 +40,7 @@ const main = async (): Promise<void> => {
   // Sanity check: applying the chosen threshold must reproduce the metrics.
   for (const name of CONFIG_NAMES) {
     const config = results.configs[name];
-    if (!config || config.status !== 'ok') continue;
+    if (config?.status !== 'ok') continue;
     const threshold = thresholds[name] ?? 0;
     const metrics = scoreAbstention(
       config.perQuestion.map((question) => ({
@@ -57,7 +57,10 @@ const main = async (): Promise<void> => {
   }
 
   await mkdir(join(process.cwd(), 'config'), { recursive: true });
-  await writeFile(join(process.cwd(), 'config', 'abstention.json'), `${JSON.stringify(thresholds, null, 2)}\n`);
+  await writeFile(
+    join(process.cwd(), 'config', 'abstention.json'),
+    `${JSON.stringify(thresholds, null, 2)}\n`,
+  );
   await writeFile(join(process.cwd(), 'config', 'ABSTENTION.md'), `${report.join('\n')}\n`);
   console.log(report.join('\n'));
 };

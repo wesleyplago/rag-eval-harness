@@ -21,7 +21,10 @@ const dir = join(process.cwd(), 'results');
 const baselineRaw = await readFile(join(dir, 'baseline.json'), 'utf8');
 const baseline = JSON.parse(baselineRaw) as Baseline;
 
-const files = (await readdir(dir)).filter((file) => /^results-.*\.json$/.test(file)).sort().reverse();
+const files = (await readdir(dir))
+  .filter((file) => /^results-.*\.json$/.test(file))
+  .sort()
+  .reverse();
 const latest = files[0];
 if (!latest) {
   console.error('No results/results-*.json found.');
@@ -32,7 +35,7 @@ const results = JSON.parse(await readFile(join(dir, latest), 'utf8')) as RunResu
 let failed = false;
 for (const [name, expected] of Object.entries(baseline.configs)) {
   const current = results.configs[name];
-  if (!current || current.status !== 'ok' || !current.metrics) {
+  if (current?.status !== 'ok' || !current.metrics) {
     console.error(`✗ ${name}: missing from the eval run`);
     failed = true;
     continue;

@@ -1,13 +1,15 @@
-import { closeDb } from '../src/db/client.js';
 import { config } from '../src/config.js';
+import { closeDb } from '../src/db/client.js';
 import { HybridRetriever } from '../src/retrieval/hybrid.js';
 import { RerankRetriever } from '../src/retrieval/rerank.js';
 
+const { baseUrl, model } = config.rerank;
+if (!baseUrl || !model) throw new Error('RERANK_BASE_URL and RERANK_MODEL must be set');
 const hybrid = new HybridRetriever('local:bge-m3');
 const reranker = new RerankRetriever(hybrid, {
-  baseUrl: config.rerank.baseUrl!,
+  baseUrl,
   apiKey: config.rerank.apiKey,
-  model: config.rerank.model!,
+  model,
   timeoutMs: config.rerank.timeoutMs,
   candidates: config.rerank.candidates,
 });

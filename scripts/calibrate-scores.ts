@@ -1,11 +1,11 @@
-import { writeFile, mkdir } from 'node:fs/promises';
+import { mkdir, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { closeDb } from '../src/db/client.js';
 import { listGoldenQuestions } from '../src/db/queries.js';
+import { calibrateThreshold } from '../src/retrieval/abstain.js';
 import { Bm25Retriever } from '../src/retrieval/bm25.js';
 import { DenseRetriever } from '../src/retrieval/dense.js';
 import { HybridRetriever } from '../src/retrieval/hybrid.js';
-import { calibrateThreshold } from '../src/retrieval/abstain.js';
 import type { Retriever } from '../src/retrieval/types.js';
 
 const questions = await listGoldenQuestions();
@@ -50,7 +50,10 @@ for (const [name, retriever] of retrievers) {
 thresholds['hybrid+rerank'] = thresholds.hybrid ?? 0;
 
 await mkdir(join(process.cwd(), 'config'), { recursive: true });
-await writeFile(join(process.cwd(), 'config', 'abstention.json'), `${JSON.stringify(thresholds, null, 2)}\n`);
+await writeFile(
+  join(process.cwd(), 'config', 'abstention.json'),
+  `${JSON.stringify(thresholds, null, 2)}\n`,
+);
 await writeFile(join(process.cwd(), 'config', 'ABSTENTION.md'), `${report.join('\n')}\n`);
 console.log('thresholds', thresholds);
 await closeDb();
