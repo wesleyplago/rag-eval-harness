@@ -30,7 +30,7 @@ services:
       EMBEDDING_CACHE_DIR: /data/cache/transformers
       ABSTAIN_THRESHOLD: 0.42
     ports:
-      - "3000:3000"
+      - "${API_PORT:-3000}:3000"
     volumes:
       - model-cache:/data/cache
     depends_on:

@@ -5,7 +5,7 @@
   "description": "RAG over Brazilian payment regulation, measured: BM25 vs dense vs hybrid vs rerank.",
   "type": "module",
   "engines": {
-    "node": ">=20"
+    "node": ">=22.13"
   },
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
