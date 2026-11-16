@@ -1,7 +1,7 @@
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { db } from '../db/client.js';
-import { listChunks, listGoldenQuestions } from '../db/queries.js';
+import { bm25Search, listChunks, listGoldenQuestions } from '../db/queries.js';
 import { chunkMarkdown } from '../ingest/chunk.js';
 import { listCorpusFiles } from '../ingest/corpus.js';
 import { logger } from '../logger.js';
@@ -126,17 +126,11 @@ export const runAblation = async (): Promise<AblationRow[]> => {
       if (expected.length === 0) continue;
       mappedQuestions += 1;
 
-      const result = await db().raw<{ rows: Array<{ id: number }> }>(
-        `
-        SELECT id
-        FROM ablation_chunks
-        WHERE tsv @@ plainto_tsquery('portuguese', ?)
-        ORDER BY ts_rank_cd(tsv, plainto_tsquery('portuguese', ?)) DESC, id ASC
-        LIMIT 10
-        `,
-        [question.question, question.question],
+      // Same BM25 as the main eval (strict AND, relaxed OR to fill), so the
+      // ablation numbers are comparable with the bm25 row of the headline table.
+      const retrieved = (await bm25Search(question.question, 10, 'ablation_chunks')).map(
+        (row) => row.chunkId,
       );
-      const retrieved = result.rows.map((row) => row.id);
       recalls.push(recallAtK(retrieved, expected, 10));
       mrrs.push(reciprocalRankAtK(retrieved, expected, 10));
       ndcgs.push(ndcgAtK(retrieved, expected, 10));

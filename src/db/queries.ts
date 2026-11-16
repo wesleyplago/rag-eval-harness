@@ -170,7 +170,14 @@ export const getChunksByIds = async (ids: number[]): Promise<ChunkRecord[]> => {
   return ids.map((id) => byId.get(id)).filter((row): row is ChunkRecord => row !== undefined);
 };
 
-export const bm25Search = async (query: string, k: number): Promise<ScoredChunk[]> => {
+/** Tables BM25 may search. Whitelisted because identifiers cannot be bound. */
+export type Bm25Table = 'chunks' | 'ablation_chunks';
+
+export const bm25Search = async (
+  query: string,
+  k: number,
+  table: Bm25Table = 'chunks',
+): Promise<ScoredChunk[]> => {
   // plainto_tsquery ANDs every term. Natural-language questions ("como funciona
   // o bloqueio cautelar?") therefore match zero chunks, because no single section
   // contains every word. Keep the strict query first (it is the precise one) and
@@ -178,7 +185,7 @@ export const bm25Search = async (query: string, k: number): Promise<ScoredChunk[
   const strict = await db().raw<{ rows: Array<{ id: number; score: string }> }>(
     `
     SELECT id, ts_rank_cd(tsv, plainto_tsquery('portuguese', ?)) AS score
-    FROM chunks
+    FROM ${table}
     WHERE tsv @@ plainto_tsquery('portuguese', ?)
     ORDER BY score DESC, id ASC
     LIMIT ?
@@ -191,7 +198,7 @@ export const bm25Search = async (query: string, k: number): Promise<ScoredChunk[
   const relaxed = await db().raw<{ rows: Array<{ id: number; score: string }> }>(
     `
     SELECT id, ts_rank_cd(tsv, relaxed_query) AS score
-    FROM chunks,
+    FROM ${table},
          LATERAL (SELECT (replace(plainto_tsquery('portuguese', ?)::text, ' & ', ' | '))::tsquery AS relaxed_query) q
     WHERE tsv @@ relaxed_query
     ORDER BY score DESC, id ASC

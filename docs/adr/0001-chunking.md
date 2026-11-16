@@ -72,8 +72,38 @@ Two caveats, stated up front:
   similarity (≥ 0.3) between token sets. This is an approximation, and the
   `coverage` column reports how many questions could be mapped.
 
-Results live in `results/ablation-<timestamp>.json`; the executed run is copied
-into the README.
+Results live in `results/ablation-<timestamp>.json`; the executed run is below.
+
+## Ablation result
+
+Run [`results/ablation-2026-11-16T12-33-56-430Z.json`](../../results/ablation-2026-11-16T12-33-56-430Z.json), produced by `pnpm eval --ablation`
+(BM25, the same strict-then-relaxed query as the main eval, k = 10):
+
+| chunk size | overlap | chunks | coverage | recall@10 | MRR@10 | nDCG@10 |
+| --- | --- | --- | --- | --- | --- | --- |
+| 700 | 120 | 425 | 86% | 0.510 | 0.329 | 0.371 |
+| 700 | 180 | 425 | 86% | 0.510 | 0.324 | 0.367 |
+| 850 | 120 | 367 | 86% | 0.552 | 0.364 | 0.407 |
+| 850 | 180 | 367 | 86% | 0.552 | 0.344 | 0.392 |
+| 1000 | 120 | 328 | 86% | 0.569 | 0.323 | 0.380 |
+| 1000 | 180 | 328 | 86% | 0.552 | 0.312 | 0.367 |
+
+How to read it:
+
+- Only the answerable questions whose expected chunk could be mapped (coverage)
+  are scored, and there is no abstention, so these numbers are **not** comparable
+  with the `bm25` row of the README table.
+- Larger chunks help recall a little (700 → 850/1000: about +4 to +6 points);
+  850/120 has the best MRR and nDCG. With ~100 scored questions and no
+  confidence interval on this table, differences of this size are within noise.
+- The larger overlap is never better. Overlap only prefixes the tail of the
+  previous chunk, so it changes chunk content, not chunk count.
+- The ingested configuration (700–900 tokens, 150 overlap) sits between the
+  850 and 1000 variants. The ablation gives no reason to move it, and moving it
+  would invalidate the golden set's expected chunk ids.
+- An earlier version of the ablation ran BM25 with the strict AND query only and
+  reported recall@10 ≈ 0.08 for every variant. That was a bug in the harness,
+  not a property of the chunker; the run was discarded.
 
 ## Consequences
 
