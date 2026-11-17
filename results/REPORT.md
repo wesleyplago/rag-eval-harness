@@ -1,6 +1,6 @@
 # Evaluation report
 
-- Run: `2026-11-16T18-42-33-124Z` (2026-11-16T18:42:49.047Z)
+- Run: `2026-11-16T22-10-33-597Z` (2026-11-16T22:10:51.996Z)
 - Corpus: 10 documents, 386 chunks
 - Golden set: 140 questions (80 semantic, 20 identifier, 20 temporal, 20 unanswerable)
 - Retrieval metric: recall/MRR/nDCG at 10, binary relevance on expected_chunk_ids
@@ -11,8 +11,8 @@
 | config | recall@10 | MRR@10 | nDCG@10 | $/1k | p50 | p95 |
 | --- | --- | --- | --- | --- | --- | --- |
 | bm25 | 0.427 | 0.234 | 0.279 | $0.00 | 4 ms | 6 ms |
-| dense | 0.820 | 0.606 | 0.654 | $0.00 | 29 ms | 56 ms |
-| hybrid | 0.792 | 0.602 | 0.648 | $0.00 | 31 ms | 79 ms |
+| dense | 0.820 | 0.606 | 0.654 | $0.00 | 31 ms | 57 ms |
+| hybrid | 0.792 | 0.602 | 0.648 | $0.00 | 35 ms | 137 ms |
 | hybrid+rerank | skipped | skipped | skipped | skipped | skipped | skipped |
 
 ## By slice

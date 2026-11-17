@@ -12,13 +12,13 @@ the results that are bad, and the one that is not measured yet (rerank).
 ## Results
 
 <!--RESULTS_TABLE-->
-Run `2026-11-16T18-42-33-124Z` · 10 documents · 386 chunks · 140 questions · k=10. Raw data: [`results/results-2026-11-16T18-42-33-124Z.json`](results/results-2026-11-16T18-42-33-124Z.json). Produced by `pnpm eval`; this block is written by `pnpm report`.
+Run `2026-11-16T22-10-33-597Z` · 10 documents · 386 chunks · 140 questions · k=10. Raw data: [`results/results-2026-11-16T22-10-33-597Z.json`](results/results-2026-11-16T22-10-33-597Z.json). Produced by `pnpm eval`; this block is written by `pnpm report`.
 
 | config | recall@10 | MRR@10 | nDCG@10 | $/1k | p50 | p95 |
 | --- | --- | --- | --- | --- | --- | --- |
 | bm25 | 0.427 | 0.234 | 0.279 | $0.00 | 4 ms | 6 ms |
-| dense | 0.820 | 0.606 | 0.654 | $0.00 | 29 ms | 56 ms |
-| hybrid | 0.792 | 0.602 | 0.648 | $0.00 | 31 ms | 79 ms |
+| dense | 0.820 | 0.606 | 0.654 | $0.00 | 31 ms | 57 ms |
+| hybrid | 0.792 | 0.602 | 0.648 | $0.00 | 35 ms | 137 ms |
 | hybrid+rerank | skipped | skipped | skipped | skipped | skipped | skipped |
 
 `hybrid+rerank` was skipped: rerank endpoint rejected a probe request (HTTP 400).
@@ -217,7 +217,7 @@ from the latest run by [`src/eval/report.ts`](src/eval/report.ts); the full list
 with retrieved chunk ids is in [`results/REPORT.md`](results/REPORT.md).
 
 <!--FAILURE_GALLERY-->
-From run `2026-11-16T18-42-33-124Z`, config `hybrid`. Expected vs retrieved sections are read from the database; the hypothesis column is a heuristic in [`src/eval/report.ts`](src/eval/report.ts), not a diagnosis.
+From run `2026-11-16T22-10-33-597Z`, config `hybrid`. Expected vs retrieved sections are read from the database; the hypothesis column is a heuristic in [`src/eval/report.ts`](src/eval/report.ts), not a diagnosis.
 
 | id | slice | question | expected section | hybrid top-1 | hypothesis |
 | --- | --- | --- | --- | --- | --- |
